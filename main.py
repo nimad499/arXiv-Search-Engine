@@ -49,8 +49,12 @@ def download_pdfs_from_arxiv(
             logging.info(f"Downloading: {title}")
             response = requests.get(pdf_url, allow_redirects=True, timeout=1)
 
-            with open(pdf_path, "wb") as pdf_file:
-                pdf_file.write(response.content)
+            try:
+                with open(pdf_path, "wb") as pdf_file:
+                    pdf_file.write(response.content)
+            except:
+                logging.info(f"Skip: {pdf_path}")
+                continue
             logging.info(f"Saved: {pdf_path}")
         else:
             logging.info(f"Exist: {title}")
