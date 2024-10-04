@@ -1,8 +1,9 @@
 import argparse
 import logging
+import multiprocessing as mp
 import os
-import re
 from ctypes import cdll
+from functools import partial
 from pathlib import Path
 
 import feedparser
@@ -106,6 +107,15 @@ def preprocess_text(text):
     return tokens
 
 
+def parallel_preprocess_text(text):
+    num_cores = mp.cpu_count()
+
+    with mp.Pool(processes=num_cores) as pool:
+        tokens = pool.map(partial(preprocess_text), text)
+
+    return tokens
+
+
 def file_name_to_title(file_name: str):
     file_name = file_name.split(".")[0]
 
@@ -166,7 +176,7 @@ if __name__ == "__main__":
         stop_words = set(stopwords.words("english"))
 
         text_data, titles = load_text_files(text_dir)
-        preprocessed_data = [preprocess_text(doc) for doc in text_data]
+        preprocessed_data = parallel_preprocess_text(text_data)
 
         processed_docs = [" ".join(tokens) for tokens in preprocessed_data]
 
