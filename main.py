@@ -170,12 +170,13 @@ if __name__ == "__main__":
             str(pdf_dir).encode("utf-8"), str(text_dir).encode("utf-8")
         )
 
-    if args.search:
+    if args.search or args.preprocess:
         query = args.search
 
-        nltk.download("punkt")
-        nltk.download("punkt_tab")
-        nltk.download("stopwords")
+        if args.preprocess:
+            nltk.download("punkt")
+            nltk.download("punkt_tab")
+            nltk.download("stopwords")
 
         stop_words = set(stopwords.words("english"))
 
@@ -205,11 +206,14 @@ if __name__ == "__main__":
             with open(preprocessed_path / "tfidf_matrix.pkl", "rb") as f:
                 tfidf_matrix = pickle.load(f)
 
-        top_n = args.top_n
-        top_docs_idx, scores = search(query, tfidf_matrix, vectorizer, top_n)
-
-        print(f"\nTop documents for query '{query}':")
-        for idx in top_docs_idx:
-            print(
-                f"{file_name_to_title(titles[idx])} (Score: {scores[idx]:.4f})"
+        if args.search:
+            top_n = args.top_n
+            top_docs_idx, scores = search(
+                query, tfidf_matrix, vectorizer, top_n
             )
+
+            print(f"Top documents for query '{query}':")
+            for idx in top_docs_idx:
+                print(
+                    f"{file_name_to_title(titles[idx])} (Score: {scores[idx]:.4f})"
+                )
