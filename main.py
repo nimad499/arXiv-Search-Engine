@@ -153,6 +153,7 @@ if __name__ == "__main__":
     parser.add_argument("-d", "--download-article", action="store_true")
     parser.add_argument("-e", "--extract-text", action="store_true")
     parser.add_argument("-s", "--search", type=str)
+    parser.add_argument("-n", "--top-n", type=int, default=5)
     args = parser.parse_args()
 
     if args.download_article:
@@ -186,7 +187,8 @@ if __name__ == "__main__":
 
         feature_names = vectorizer.get_feature_names_out()
 
-        top_docs_idx, scores = search(query, tfidf_matrix, vectorizer)
+        top_n = args.top_n
+        top_docs_idx, scores = search(query, tfidf_matrix, vectorizer, top_n)
 
         print(f"\nTop documents for query '{query}':")
         for idx in top_docs_idx:
