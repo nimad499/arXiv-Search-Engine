@@ -2,3 +2,4 @@ search_query = "cat:cs.LG+OR+cat:stat.ML"
 max_results = 100
 pdf_dir = "data/pdf"
 text_dir = "data/text"
+preprocessed_path = "data/preprocessed"

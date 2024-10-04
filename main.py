@@ -2,6 +2,7 @@ import argparse
 import logging
 import multiprocessing as mp
 import os
+import pickle
 from ctypes import cdll
 from functools import partial
 from pathlib import Path
@@ -148,11 +149,13 @@ if __name__ == "__main__":
     max_results = config["max_results"]
     pdf_dir = Path(config["pdf_dir"])
     text_dir = Path(config["text_dir"])
+    preprocessed_path = Path(config["preprocessed_path"])
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", "--download-article", action="store_true")
     parser.add_argument("-e", "--extract-text", action="store_true")
     parser.add_argument("-s", "--search", type=str)
+    parser.add_argument("-p", "--preprocess", action="store_true")
     parser.add_argument("-n", "--top-n", type=int, default=5)
     args = parser.parse_args()
 
@@ -177,15 +180,30 @@ if __name__ == "__main__":
         stop_words = set(stopwords.words("english"))
 
         text_data, titles = load_text_files(text_dir)
-        preprocessed_data = parallel_preprocess_text(text_data)
+
+        if args.preprocess:
+            preprocessed_data = parallel_preprocess_text(text_data)
+            with open(preprocessed_path / "data.pkl", "wb") as f:
+                pickle.dump(preprocessed_data, f)
+        else:
+            with open(preprocessed_path / "data.pkl", "rb") as f:
+                preprocessed_data = pickle.load(f)
 
         processed_docs = [" ".join(tokens) for tokens in preprocessed_data]
 
-        vectorizer = TfidfVectorizer()
+        if args.preprocess:
+            vectorizer = TfidfVectorizer()
+            tfidf_matrix = vectorizer.fit_transform(processed_docs)
 
-        tfidf_matrix = vectorizer.fit_transform(processed_docs)
-
-        feature_names = vectorizer.get_feature_names_out()
+            with open(preprocessed_path / "vectorizer.pkl", "wb") as f:
+                pickle.dump(vectorizer, f)
+            with open(preprocessed_path / "tfidf_matrix.pkl", "wb") as f:
+                pickle.dump(tfidf_matrix, f)
+        else:
+            with open(preprocessed_path / "vectorizer.pkl", "rb") as f:
+                vectorizer = pickle.load(f)
+            with open(preprocessed_path / "tfidf_matrix.pkl", "rb") as f:
+                tfidf_matrix = pickle.load(f)
 
         top_n = args.top_n
         top_docs_idx, scores = search(query, tfidf_matrix, vectorizer, top_n)
