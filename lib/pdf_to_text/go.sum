@@ -1,0 +1,4 @@
+github.com/Masterminds/semver/v3 v3.2.1 h1:RN9w6+7QoMeJVGyfmbcgs28Br8cvmnucEXnY0rYXWg0=
+github.com/Masterminds/semver/v3 v3.2.1/go.mod h1:qvl/7zhW3nngYb5+80sSMF+FG2BjYrf8m9wsX0PNOMQ=
+github.com/heussd/pdftotext-go v0.0.0-20240804143356-fe57a0d73567 h1:WVAIXcRJB+/9H+m9ZBDsufL4CvZAgcn/oCuJhFfKd74=
+github.com/heussd/pdftotext-go v0.0.0-20240804143356-fe57a0d73567/go.mod h1:paEJbq0w03DWAdHUY0U+Bn33wYRssDzUb/MAqbUMnH8=

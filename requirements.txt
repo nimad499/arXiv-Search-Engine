@@ -1,0 +1,12 @@
+certifi==2024.8.30
+cffi==1.17.1
+charset-normalizer==3.3.2
+cryptography==43.0.1
+feedparser==6.0.11
+idna==3.10
+pdfminer.six==20240706
+pycparser==2.22
+requests==2.32.3
+sgmllib3k==1.0.0
+toml==0.10.2
+urllib3==2.2.3
