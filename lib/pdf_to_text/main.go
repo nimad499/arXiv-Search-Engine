@@ -11,6 +11,7 @@ import (
 )
 import (
 	"fmt"
+	"sync"
 )
 
 func pages_to_txt(pdf_pages []pdftotext.PdfPage, txt_file_path string) error {
@@ -54,23 +55,35 @@ func file_name_without_extension(path string) string {
 	return strings.TrimSuffix(baseName, filepath.Ext(baseName))
 }
 
+func pdf_to_txt(pdf_file []byte, txt_file_path string, wg *sync.WaitGroup) {
+	pages, err := pdftotext.Extract(pdf_file)
+	if err != nil {
+		panic(err)
+	}
+
+	if err := pages_to_txt(pages, txt_file_path); err != nil {
+		panic(err)
+	}
+
+	wg.Done()
+}
+
 func extract_text_from_pdfs(pdf_dir string, txt_dir string) error {
 	pdfs, err := list_pdfs(pdf_dir)
 	if err != nil {
 		return err
 	}
 
+	var wg sync.WaitGroup
 	for _, p := range pdfs {
 		pdf_file, _ := os.ReadFile(p)
 
-		pages, _ := pdftotext.Extract(pdf_file)
-
 		txt_file_path := txt_dir + "/" + file_name_without_extension(p) + ".txt"
-		err := pages_to_txt(pages, txt_file_path)
-		if err != nil {
-			return err
-		}
+
+		wg.Add(1)
+		go pdf_to_txt(pdf_file, txt_file_path, &wg)
 	}
+	wg.Wait()
 
 	return nil
 }
