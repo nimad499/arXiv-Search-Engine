@@ -10,10 +10,8 @@ from nltk.tokenize import word_tokenize
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-import config
-import downloader
-import pdf_tool
-from config import (
+from src import config, downloader, pdf_tool
+from src.config import (
     max_results,
     pdf_dir,
     preprocessed_path,
