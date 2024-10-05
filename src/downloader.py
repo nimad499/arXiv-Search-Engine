@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 
 import feedparser
+import nltk
 import requests
 
 
@@ -40,3 +41,9 @@ def download_pdfs_from_arxiv(
             logging.info(f"Saved: {pdf_path}")
         else:
             logging.info(f"Exist: {title}")
+
+
+def download_nltk_modules():
+    nltk.download("punkt")
+    nltk.download("punkt_tab")
+    nltk.download("stopwords")

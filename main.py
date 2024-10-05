@@ -4,7 +4,6 @@ import os
 import pickle
 from functools import partial
 
-import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -98,9 +97,7 @@ if __name__ == "__main__":
         query = config.search
 
         if config.preprocess:
-            nltk.download("punkt")
-            nltk.download("punkt_tab")
-            nltk.download("stopwords")
+            downloader.download_nltk_modules()
 
         stop_words = set(stopwords.words("english"))
 
