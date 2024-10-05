@@ -25,19 +25,18 @@ def download_pdfs_from_arxiv(
         title = entry.title
 
         pdf_url = entry.id.replace("abs", "pdf") + ".pdf"
-        pdf_path = os.path.join(download_dir, title.replace(" ", "_") + ".pdf")
+        pdf_path = os.path.join(
+            download_dir, title.replace(" ", "_").replace("/", "⧸") + ".pdf"
+        )
         pdf_path = Path(pdf_path)
 
         if not pdf_path.exists() or re_download:
             logging.info(f"Downloading: {title}")
             response = requests.get(pdf_url, allow_redirects=True, timeout=1)
 
-            try:
-                with open(pdf_path, "wb") as pdf_file:
-                    pdf_file.write(response.content)
-            except:
-                logging.info(f"Skip: {pdf_path}")
-                continue
+            with open(pdf_path, "wb") as pdf_file:
+                pdf_file.write(response.content)
+
             logging.info(f"Saved: {pdf_path}")
         else:
             logging.info(f"Exist: {title}")
