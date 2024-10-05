@@ -1,5 +1,6 @@
 import argparse
 from pathlib import Path
+from sys import argv
 
 import toml
 
@@ -20,6 +21,8 @@ parser.add_argument("-s", "--search", type=str)
 parser.add_argument("-p", "--preprocess", action="store_true")
 parser.add_argument("-n", "--top-n", type=int, default=5)
 args = parser.parse_args()
+if len(argv) < 2:
+    print(parser.print_help())
 
 download_article = args.download_article
 extract_text = args.extract_text
