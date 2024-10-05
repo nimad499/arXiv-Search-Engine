@@ -1,83 +1,25 @@
-import argparse
 import logging
 import multiprocessing as mp
 import os
 import pickle
-from ctypes import cdll
 from functools import partial
-from pathlib import Path
 
-import feedparser
 import nltk
-import requests
-import toml
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
-from pdfminer.high_level import extract_text
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-
-def extract_text_from_pdf(pdf_file_path):
-    text = extract_text(pdf_file_path)
-    return text
-
-
-def download_pdfs_from_arxiv(
-    search_query: str,
-    max_results: int,
-    download_dir: Path,
-    re_download=False,
-):
-    base_url = "http://export.arxiv.org/api/query?"
-    query = f"search_query={search_query}&start=0&max_results={max_results}&sortBy=submittedDate&sortOrder=descending"
-    feed_url = base_url + query
-
-    feed = feedparser.parse(feed_url)
-
-    if not os.path.exists(download_dir):
-        os.makedirs(download_dir)
-
-    for entry in feed.entries:
-        title = entry.title
-
-        pdf_url = entry.id.replace("abs", "pdf") + ".pdf"
-        pdf_path = os.path.join(download_dir, title.replace(" ", "_") + ".pdf")
-        pdf_path = Path(pdf_path)
-
-        if not pdf_path.exists() or re_download:
-            logging.info(f"Downloading: {title}")
-            response = requests.get(pdf_url, allow_redirects=True, timeout=1)
-
-            try:
-                with open(pdf_path, "wb") as pdf_file:
-                    pdf_file.write(response.content)
-            except:
-                logging.info(f"Skip: {pdf_path}")
-                continue
-            logging.info(f"Saved: {pdf_path}")
-        else:
-            logging.info(f"Exist: {title}")
-
-
-def get_files_with_extension(directory, extension):
-    pdf_files = []
-    for item in os.listdir(directory):
-        full_path = Path(os.path.join(directory, item))
-        if os.path.isfile(full_path) and item.lower().endswith(
-            f".{extension}"
-        ):
-            pdf_files.append(full_path)
-    return pdf_files
-
-
-def extract_text_from_pdfs(pdf_dir, text_dir):
-    pdf_files = get_files_with_extension(pdf_dir, "pdf")
-    for p in pdf_files:
-        t = extract_text_from_pdf(p)
-        with open(text_dir / Path(p.stem + ".txt"), "w") as f:
-            f.write(t)
-        logging.info(f"Saved: {text_dir / Path(p.stem + '.txt')}")
+import config
+import downloader
+import pdf_tool
+from config import (
+    max_results,
+    pdf_dir,
+    preprocessed_path,
+    search_query,
+    text_dir,
+)
 
 
 def load_text_files(text_dir):
@@ -146,38 +88,18 @@ def search(query, tfidf_matrix, vectorizer, top_n=5):
 if __name__ == "__main__":
     logging.getLogger().setLevel(20)
 
-    with open("config.toml", "r") as f:
-        config = toml.load(f)
+    if config.download_article:
+        downloader.download_pdfs_from_arxiv(search_query, max_results, pdf_dir)
 
-    search_query = config["search_query"]
-    max_results = config["max_results"]
-    pdf_dir = Path(config["pdf_dir"])
-    text_dir = Path(config["text_dir"])
-    preprocessed_path = Path(config["preprocessed_path"])
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-d", "--download-article", action="store_true")
-    parser.add_argument("-e", "--extract-text", action="store_true")
-    parser.add_argument("-s", "--search", type=str)
-    parser.add_argument("-p", "--preprocess", action="store_true")
-    parser.add_argument("-n", "--top-n", type=int, default=5)
-    args = parser.parse_args()
-
-    if args.download_article:
-        download_pdfs_from_arxiv(search_query, max_results, pdf_dir)
-
-    if args.extract_text:
-        extract_text_from_pdfs = cdll.LoadLibrary(
-            "./lib/pdf_to_text/pdf_to_text.so"
-        ).extract_text_from_pdfs_c
-        extract_text_from_pdfs(
+    if config.extract_text:
+        pdf_tool.extract_text_from_pdfs(
             str(pdf_dir).encode("utf-8"), str(text_dir).encode("utf-8")
         )
 
-    if args.search or args.preprocess:
-        query = args.search
+    if config.search or config.preprocess:
+        query = config.search
 
-        if args.preprocess:
+        if config.preprocess:
             nltk.download("punkt")
             nltk.download("punkt_tab")
             nltk.download("stopwords")
@@ -186,7 +108,7 @@ if __name__ == "__main__":
 
         text_data, titles = load_text_files(text_dir)
 
-        if args.preprocess:
+        if config.preprocess:
             preprocessed_data = parallel_preprocess_text(text_data)
             with open(preprocessed_path / "data.pkl", "wb") as f:
                 pickle.dump(preprocessed_data, f)
@@ -196,7 +118,7 @@ if __name__ == "__main__":
 
         processed_docs = [" ".join(tokens) for tokens in preprocessed_data]
 
-        if args.preprocess:
+        if config.preprocess:
             vectorizer = TfidfVectorizer()
             tfidf_matrix = vectorizer.fit_transform(processed_docs)
 
@@ -210,8 +132,8 @@ if __name__ == "__main__":
             with open(preprocessed_path / "tfidf_matrix.pkl", "rb") as f:
                 tfidf_matrix = pickle.load(f)
 
-        if args.search:
-            top_n = args.top_n
+        if config.search:
+            top_n = config.top_n
             top_docs_idx, scores = search(
                 query, tfidf_matrix, vectorizer, top_n
             )

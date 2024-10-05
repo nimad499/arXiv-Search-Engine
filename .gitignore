@@ -2,3 +2,4 @@
 data/
 *.h
 *.so
+__pycache__/
