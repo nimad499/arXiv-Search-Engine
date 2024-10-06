@@ -1,4 +1,3 @@
-import logging
 import os
 from ctypes import cdll
 
@@ -23,13 +22,13 @@ def extract_text_from_pdf(pdf_file_path):
     return text
 
 
-def _extract_text_from_pdfs(pdf_dir, text_dir):
-    pdf_files = get_files_with_extension(pdf_dir, "pdf")
-    for p in pdf_files:
-        t = extract_text_from_pdf(p)
-        with open(text_dir / Path(p.stem + ".txt"), "w") as f:
-            f.write(t)
-        logging.info(f"Saved: {text_dir / Path(p.stem + '.txt')}")
+# def extract_text_from_pdfs(pdf_dir, text_dir):
+#     pdf_files = get_files_with_extension(pdf_dir, "pdf")
+#     for p in pdf_files:
+#         t = extract_text_from_pdf(p)
+#         with open(text_dir / Path(p.stem + ".txt"), "w") as f:
+#             f.write(t)
+#         logging.info(f"Saved: {text_dir / Path(p.stem + '.txt')}")
 
 
 extract_text_from_pdfs = cdll.LoadLibrary(

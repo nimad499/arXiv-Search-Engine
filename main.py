@@ -1,11 +1,12 @@
 import logging
+from functools import lru_cache
 
+import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
 
-from src import config, downloader, pdf_tool, utils, preprocess
+from src import config, pdf_download, preprocess, search, text_extract, utils
 from src.config import (
     max_results,
     pdf_dir,
@@ -15,90 +16,69 @@ from src.config import (
 )
 
 
-def download_pdfs():
-    downloader.download_pdfs_from_arxiv(search_query, max_results, pdf_dir)
+@lru_cache(1)
+def _stop_words():
+    return set(stopwords.words("english"))
 
 
-def extract_text():
-    pdf_tool.extract_text_from_pdfs(
+def _download_pdfs():
+    pdf_download.download_pdfs_from_arxiv(search_query, max_results, pdf_dir)
+
+
+def _extract_text():
+    text_extract.extract_text_from_pdfs(
         str(pdf_dir).encode("utf-8"), str(text_dir).encode("utf-8")
     )
 
 
-def search(preprocessed_query, tfidf_matrix, vectorizer, top_n=5):
-    query_str = " ".join(preprocessed_query)
-    query_vec = vectorizer.transform([query_str])
-
-    cosine_similarities = cosine_similarity(query_vec, tfidf_matrix).flatten()
-
-    top_n_idx = cosine_similarities.argsort()[-top_n:][::-1]
-
-    return top_n_idx, cosine_similarities
+def _download_nltk_modules():
+    nltk.download("punkt")
+    nltk.download("punkt_tab")
+    nltk.download("stopwords")
 
 
 if __name__ == "__main__":
     logging.getLogger().setLevel(logging.INFO)
 
     if config.download_article:
-        download_pdfs()
+        _download_pdfs()
 
     if config.extract_text:
-        extract_text()
+        _extract_text()
 
-    if config.search or config.preprocess:
-        if config.preprocess:
-            downloader.download_nltk_modules()
+    if config.load_preprocessed:
+        titles = utils.load_preprocessed_file(preprocessed_path / "titles.pkl")
+        vectorizer = utils.load_preprocessed_file(
+            preprocessed_path / "vectorizer.pkl"
+        )
+        tfidf_matrix = utils.load_preprocessed_file(
+            preprocessed_path / "tfidf_matrix.pkl"
+        )
+    else:
+        _download_nltk_modules()
 
-        stop_words = set(stopwords.words("english"))
+        titles, vectorizer, tfidf_matrix = preprocess.preprocess(
+            text_dir,
+            preprocessed_path,
+            word_tokenize,
+            _stop_words(),
+            TfidfVectorizer(),
+        )
 
-        if config.preprocess:
-            text_data, titles = utils.load_text_files(
-                text_dir, preprocess.clean_text
-            )
+    if config.search:
+        query = config.search
+        cleaned_query = preprocess.clean_text(query)
+        preprocessed_query = preprocess.preprocess_text(
+            cleaned_query, word_tokenize, _stop_words()
+        )
 
-            preprocessed_data = preprocess.parallel_preprocess_text(
-                text_data, word_tokenize, stop_words
-            )
-            vectorizer = TfidfVectorizer()
+        top_n = config.top_n
+        top_docs_idx, scores = search.search(
+            preprocessed_query, tfidf_matrix, vectorizer, top_n
+        )
 
-            processed_docs = [" ".join(tokens) for tokens in preprocessed_data]
-
-            tfidf_matrix = vectorizer.fit_transform(processed_docs)
-
-            utils.create_preprocessed_file(
-                titles, preprocessed_path / "titles.pkl"
+        print(f"Top documents for query '{query}':")
+        for idx in top_docs_idx:
+            print(
+                f"{utils.file_name_to_title(titles[idx])} (Score: {scores[idx]:.4f})"
             )
-            utils.create_preprocessed_file(
-                vectorizer, preprocessed_path / "vectorizer.pkl"
-            )
-            utils.create_preprocessed_file(
-                tfidf_matrix, preprocessed_path / "tfidf_matrix.pkl"
-            )
-        else:
-            titles = utils.load_preprocessed_file(
-                preprocessed_path / "titles.pkl"
-            )
-            vectorizer = utils.load_preprocessed_file(
-                preprocessed_path / "vectorizer.pkl"
-            )
-            tfidf_matrix = utils.load_preprocessed_file(
-                preprocessed_path / "tfidf_matrix.pkl"
-            )
-
-        if config.search:
-            query = config.search
-            cleaned_query = preprocess.clean_text(query)
-            preprocessed_query = preprocess.preprocess_text(
-                cleaned_query, word_tokenize, stop_words
-            )
-
-            top_n = config.top_n
-            top_docs_idx, scores = search(
-                preprocessed_query, tfidf_matrix, vectorizer, top_n
-            )
-
-            print(f"Top documents for query '{query}':")
-            for idx in top_docs_idx:
-                print(
-                    f"{utils.file_name_to_title(titles[idx])} (Score: {scores[idx]:.4f})"
-                )
