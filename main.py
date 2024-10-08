@@ -1,4 +1,5 @@
 import logging
+import os
 from functools import lru_cache
 
 import nltk
@@ -8,10 +9,10 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 
 from src import config, pdf_download, preprocess, search, text_extract, utils
 from src.config import (
+    arXiv_search_query,
     max_results,
     pdf_dir,
     preprocessed_path,
-    arXiv_search_query,
     text_dir,
 )
 
@@ -39,6 +40,13 @@ def _download_nltk_modules():
 
 if __name__ == "__main__":
     logging.getLogger().setLevel(logging.INFO)
+
+    if not os.path.exists(text_dir):
+        os.makedirs(text_dir)
+    if not os.path.exists(pdf_dir):
+        os.makedirs(pdf_dir)
+    if not os.path.exists(preprocessed_path):
+        os.makedirs(preprocessed_path)
 
     if config.download_article:
         _download_pdfs()
