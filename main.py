@@ -46,26 +46,28 @@ if __name__ == "__main__":
     if config.extract_text:
         _extract_text()
 
-    if config.load_preprocessed:
-        titles = utils.load_preprocessed_file(preprocessed_path / "titles.pkl")
-        vectorizer = utils.load_preprocessed_file(
-            preprocessed_path / "vectorizer.pkl"
-        )
-        tfidf_matrix = utils.load_preprocessed_file(
-            preprocessed_path / "tfidf_matrix.pkl"
-        )
-    else:
-        _download_nltk_modules()
-
-        titles, vectorizer, tfidf_matrix = preprocess.preprocess(
-            text_dir,
-            preprocessed_path,
-            word_tokenize,
-            _stop_words(),
-            TfidfVectorizer(),
-        )
-
     if config.search:
+        if config.load_preprocessed:
+            titles = utils.load_preprocessed_file(
+                preprocessed_path / "titles.pkl"
+            )
+            vectorizer = utils.load_preprocessed_file(
+                preprocessed_path / "vectorizer.pkl"
+            )
+            tfidf_matrix = utils.load_preprocessed_file(
+                preprocessed_path / "tfidf_matrix.pkl"
+            )
+        else:
+            _download_nltk_modules()
+
+            titles, vectorizer, tfidf_matrix = preprocess.preprocess(
+                text_dir,
+                preprocessed_path,
+                word_tokenize,
+                _stop_words(),
+                TfidfVectorizer(),
+            )
+
         query = config.search
         cleaned_query = preprocess.clean_text(query)
         preprocessed_query = preprocess.preprocess_text(
