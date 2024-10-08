@@ -11,7 +11,7 @@ from src.config import (
     max_results,
     pdf_dir,
     preprocessed_path,
-    search_query,
+    arXiv_search_query,
     text_dir,
 )
 
@@ -22,7 +22,7 @@ def _stop_words():
 
 
 def _download_pdfs():
-    pdf_download.download_pdfs_from_arxiv(search_query, max_results, pdf_dir)
+    pdf_download.download_pdfs_from_arxiv(arXiv_search_query, max_results, pdf_dir)
 
 
 def _extract_text():
@@ -48,9 +48,7 @@ if __name__ == "__main__":
 
     if config.search:
         if config.load_preprocessed:
-            titles = utils.load_preprocessed_file(
-                preprocessed_path / "titles.pkl"
-            )
+            titles = utils.load_preprocessed_file(preprocessed_path / "titles.pkl")
             vectorizer = utils.load_preprocessed_file(
                 preprocessed_path / "vectorizer.pkl"
             )
@@ -81,6 +79,4 @@ if __name__ == "__main__":
 
         print(f"Top documents for query '{query}':")
         for idx in top_docs_idx:
-            print(
-                f"{utils.file_name_to_title(titles[idx])} (Score: {scores[idx]:.4f})"
-            )
+            print(f"{utils.file_name_to_title(titles[idx])} (Score: {scores[idx]:.4f})")

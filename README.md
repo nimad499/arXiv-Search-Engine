@@ -17,7 +17,7 @@ enable searching within the extracted corpus.
 
 This file contains configuration settings in TOML format:
 ```toml
-search_query = "cat:cs.LG+OR+cat:stat.ML"
+arXiv_search_query = "cat:cs.LG+OR+cat:stat.ML"
 max_results = 400
 pdf_dir = "data/pdf"
 text_dir = "data/text"

@@ -7,7 +7,7 @@ import toml
 with open("config.toml", "r") as f:
     config_file = toml.load(f)
 
-search_query = config_file["search_query"]
+arXiv_search_query = config_file["arXiv_search_query"]
 max_results = config_file["max_results"]
 pdf_dir = Path(config_file["pdf_dir"])
 text_dir = Path(config_file["text_dir"])
