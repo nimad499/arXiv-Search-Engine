@@ -13,8 +13,6 @@ enable searching within the extracted corpus.
 
 ## Configuration
 
-The project uses two configuration files:
-
 ### 1. `config.toml`
 
 This file contains configuration settings in TOML format:
