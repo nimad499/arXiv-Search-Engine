@@ -3,6 +3,7 @@ import os
 from functools import lru_cache
 
 import nltk
+from nltk import PorterStemmer
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -23,7 +24,9 @@ def _stop_words():
 
 
 def _download_pdfs():
-    pdf_download.download_pdfs_from_arxiv(arXiv_search_query, max_results, pdf_dir)
+    pdf_download.download_pdfs_from_arxiv(
+        arXiv_search_query, max_results, pdf_dir
+    )
 
 
 def _extract_text():
@@ -56,7 +59,9 @@ if __name__ == "__main__":
 
     if config.search:
         if config.load_preprocessed:
-            titles = utils.load_preprocessed_file(preprocessed_path / "titles.pkl")
+            titles = utils.load_preprocessed_file(
+                preprocessed_path / "titles.pkl"
+            )
             vectorizer = utils.load_preprocessed_file(
                 preprocessed_path / "vectorizer.pkl"
             )
@@ -70,6 +75,7 @@ if __name__ == "__main__":
                 text_dir,
                 preprocessed_path,
                 word_tokenize,
+                PorterStemmer().stem,
                 _stop_words(),
                 TfidfVectorizer(),
             )
@@ -77,7 +83,7 @@ if __name__ == "__main__":
         query = config.search
         cleaned_query = preprocess.clean_text(query)
         preprocessed_query = preprocess.preprocess_text(
-            cleaned_query, word_tokenize, _stop_words()
+            cleaned_query, word_tokenize, PorterStemmer().stem, _stop_words()
         )
 
         top_n = config.top_n
@@ -87,4 +93,6 @@ if __name__ == "__main__":
 
         print(f"Top documents for query '{query}':")
         for idx in top_docs_idx:
-            print(f"{utils.file_name_to_title(titles[idx])} (Score: {scores[idx]:.4f})")
+            print(
+                f"{utils.file_name_to_title(titles[idx])} (Score: {scores[idx]:.4f})"
+            )
