@@ -1,6 +1,7 @@
 import logging
 import os
 from functools import lru_cache
+from pathlib import Path
 
 import nltk
 from nltk import PorterStemmer
@@ -91,7 +92,12 @@ if __name__ == "__main__":
         )
 
         print(f"Top documents for query '{query}':")
-        for idx in top_docs_idx:
+        for i, idx in enumerate(top_docs_idx, 1):
             print(
-                f"{utils.file_name_to_title(titles[idx])} (Score: {scores[idx]:.4f})"
+                f"{i}-{utils.file_name_to_title(titles[idx])} (Score: {scores[idx]:.4f})"
             )
+
+        print("\nPlease select an article: ", end="")
+        idx = top_docs_idx[utils.get_int(1, top_n) - 1]
+        pdf_file_path = Path(pdf_dir / (titles[idx].split(".")[0] + ".pdf"))
+        utils.open_file(pdf_file_path)

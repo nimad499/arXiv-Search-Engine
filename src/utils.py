@@ -1,5 +1,25 @@
 import os
 import pickle
+import platform
+import subprocess
+
+
+def open_file(file_path):
+    if platform.system() == "Darwin":
+        subprocess.call(("open", file_path))
+    elif platform.system() == "Windows":
+        os.startfile(file_path)
+    else:
+        subprocess.call(("xdg-open", file_path))
+
+
+def get_int(min, max):
+    number = int(input())
+
+    while number < min or number > max:
+        number = int(input("Please try again: "))
+
+    return number
 
 
 def load_preprocessed_file(path):
