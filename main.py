@@ -11,7 +11,6 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from src import config, pdf_download, preprocess, search, text_extract, utils
 from src.config import (
     arXiv_search_query,
-    max_results,
     pdf_dir,
     preprocessed_path,
     text_dir,
@@ -25,7 +24,7 @@ def _stop_words():
 
 def _download_pdfs():
     pdf_download.download_pdfs_from_arxiv(
-        arXiv_search_query, max_results, pdf_dir
+        arXiv_search_query, config.download_article, pdf_dir
     )
 
 

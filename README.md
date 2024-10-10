@@ -18,7 +18,6 @@ enable searching within the extracted corpus.
 This file contains configuration settings in TOML format:
 ```toml
 arXiv_search_query = "cat:cs.LG+OR+cat:stat.ML"
-max_results = 400
 pdf_dir = "data/pdf"
 text_dir = "data/text"
 preprocessed_path = "data/preprocessed"
@@ -39,9 +38,10 @@ respective paths.
 
 ## Example Usage
 
-### 1. Download Articles: To download articles based on the query specified in `config.toml`:
+### 1. Download Articles
+To download 10 articles based on the query specified in `config.toml`:
 ```bash
-python main.py -d
+python main.py -d 10
 ```
 
 ### 2. Extract Text
