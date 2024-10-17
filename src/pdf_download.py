@@ -32,7 +32,14 @@ def download_pdfs_from_arxiv(
 
         if not pdf_path.exists() or re_download:
             logging.info(f"Downloading: {title}")
-            response = requests.get(pdf_url, allow_redirects=True, timeout=1)
+            try:
+                response = requests.get(pdf_url, allow_redirects=True, timeout=1)
+            except (
+                requests.exceptions.ConnectionError,
+                requests.exceptions.ReadTimeout,
+            ):
+                logging.info(f"Skip: {title}")
+                continue
 
             with open(pdf_path, "wb") as pdf_file:
                 pdf_file.write(response.content)
