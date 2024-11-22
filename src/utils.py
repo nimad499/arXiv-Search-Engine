@@ -35,7 +35,7 @@ def create_preprocessed_file(object, path):
 
 
 def file_name_to_title(file_name: str):
-    file_name = file_name.split(".")[0]
+    file_name = "".join(file_name.split(".")[:-1])
 
     file_name = file_name.replace("\n__", " ").replace("_", " ")
 

@@ -59,9 +59,7 @@ if __name__ == "__main__":
 
     if config.search:
         if config.load_preprocessed:
-            titles = utils.load_preprocessed_file(
-                preprocessed_path / "titles.pkl"
-            )
+            titles = utils.load_preprocessed_file(preprocessed_path / "titles.pkl")
             vectorizer = utils.load_preprocessed_file(
                 preprocessed_path / "vectorizer.pkl"
             )
@@ -99,5 +97,7 @@ if __name__ == "__main__":
 
         print("\nPlease select an article: ", end="")
         idx = top_docs_idx[utils.get_int(1, top_n) - 1]
-        pdf_file_path = Path(pdf_dir / (titles[idx].split(".")[0] + ".pdf"))
+        pdf_file_path = Path(
+            pdf_dir / ("".join(titles[idx].split(".txt")[:-1]) + ".pdf")
+        )
         utils.open_file(pdf_file_path)
