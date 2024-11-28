@@ -59,5 +59,5 @@ python main.py -s "your search query"
 ### 4. Load Preprocessed Data
 To use preprocessed text instead of processing new texts, add the `-l` flag:
 ```bash
-python your_script.py -l -s "your search query"
+python main.py -l -s "your search query"
 ```
